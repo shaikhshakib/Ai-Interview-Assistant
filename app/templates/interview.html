@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{{ topic }} Interview</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="/static/css/style.css">
+
+</head>
+
+<body>
+
+<div class="interview-container">
+
+    <div class="interview-card">
+
+        <h1>{{ topic }} Interview</h1>
+
+        <p
+    class="question-count"
+    id="question-count"
+>
+
+    Question {{ question_number }} / {{ total_questions }}
+
+</p>
+
+        <div
+    class="question-box"
+    id="question-box"
+>
+
+    {{ question }}
+
+</div>
+
+        <textarea
+    id="answer"
+    placeholder="Type your answer here..."
+    rows="8"
+></textarea>
+
+        <button id="next-btn">
+
+    Next →
+
+</button>
+
+    </div>
+
+</div>
+<script>
+
+let topic = "{{ topic|lower }}";
+
+let currentQuestion = 1;
+
+let totalQuestions = {{ total_questions }};
+
+const nextButton = document.getElementById("next-btn");
+
+nextButton.addEventListener("click", nextQuestion);
+async function nextQuestion(){
+
+    alert("Button Clicked");
+
+}
+
+</script>
+</body>
+
+</html>
