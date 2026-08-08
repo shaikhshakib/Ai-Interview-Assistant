@@ -67,15 +67,54 @@ let topic = "{{ topic|lower }}";
 let currentQuestion = 1;
 
 let totalQuestions = {{ total_questions }};
-
+let interviewId = "{{ interview_id }}";
 const nextButton = document.getElementById("next-btn");
 
-nextButton.addEventListener("click", nextQuestion);
+
 async function nextQuestion(){
 
-    alert("Button Clicked");
+    const answer = document.getElementById("answer").value;
+
+    const response = await fetch("/next-question", {
+
+        method: "POST",
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+            topic: topic,
+            current: currentQuestion,
+            answer: answer,
+            interview_id: interviewId
+        })
+
+    });
+
+    const data = await response.json();
+
+if (data.finished) {
+
+    alert("Interview Completed!");
+
+    return;
 
 }
+
+document.getElementById("question-box").textContent = data.question;
+
+document.getElementById("question-count").textContent =
+    `Question ${data.question_number} / ${totalQuestions}`;
+
+document.getElementById("answer").value = "";
+
+currentQuestion = data.question_number;
+
+}
+
+
+nextButton.addEventListener("click", nextQuestion);
 
 </script>
 </body>
