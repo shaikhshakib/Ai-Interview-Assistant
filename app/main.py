@@ -62,6 +62,7 @@ async def next_question(data: dict):
     topic = data.get("topic").lower()
     current = data.get("current")
     answer = data.get("answer")
+    interview_id = data.get("interview_id")
 
     questions = QUESTIONS.get(topic)
 
@@ -70,7 +71,10 @@ async def next_question(data: dict):
             "error": "Invalid topic"
         })
 
-    interview_id = data.get("interview_id")
+    if interview_id not in interviews:
+        return JSONResponse({
+            "error": "Invalid interview"
+        })
 
     interviews[interview_id].append({
         "question_number": current,
@@ -81,7 +85,8 @@ async def next_question(data: dict):
     if current >= len(questions):
 
         return JSONResponse({
-            "finished": True
+            "finished": True,
+             "interview_id": interview_id
         })
 
     return JSONResponse({
@@ -89,3 +94,22 @@ async def next_question(data: dict):
         "question": questions[current],
         "question_number": current + 1
     })
+
+@app.get("/result/{interview_id}", response_class=HTMLResponse)
+async def result_page(
+    request: Request,
+    interview_id: str
+):
+
+    answers = interviews.get(interview_id)
+
+    if answers is None:
+        return HTMLResponse("Invalid Interview ID")
+
+    return templates.TemplateResponse(
+        request=request,
+        name="result.html",
+        context={
+            "answers": answers
+        }
+    )

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Interview Result</title>
+
+    <link rel="stylesheet" href="/static/css/style.css">
+
+</head>
+
+<body>
+
+    <div class="interview-card">
+
+        <h1>🎉 Interview Completed!</h1>
+
+        <p>You have completed your interview.</p>
+
+        {% for item in answers %}
+
+            <div class="result-question">
+
+                <h2>
+                    Question {{ item.question_number }}
+                </h2>
+
+                <p>
+                    {{ item.question }}
+                </p>
+
+                <h3>Your Answer</h3>
+
+                <div class="answer-box">
+                    {{ item.answer }}
+                </div>
+
+            </div>
+
+        {% endfor %}
+
+        <a href="/" class="back-btn">
+            Start Another Interview
+        </a>
+
+    </div>
+
+</body>
+
+</html>

@@ -96,10 +96,9 @@ async function nextQuestion(){
 
 if (data.finished) {
 
-    alert("Interview Completed!");
+    window.location.href = `/result/${data.interview_id}`;
 
     return;
-
 }
 
 document.getElementById("question-box").textContent = data.question;
