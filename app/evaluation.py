@@ -1,27 +1,38 @@
+import os
+import json
+
+from dotenv import load_dotenv
+from google import genai
+
+from prompts import build_evaluation_prompt
+
+
+load_dotenv()
+
+client = genai.Client(
+    api_key=os.getenv("GOOGLE_API_KEY")
+)
+
+
 def evaluate_answer(question, answer):
-    """
-    Evaluate an interview answer.
 
-    This function will later be connected to an AI model.
-    For now, it provides the structure that our AI evaluation
-    will follow.
-    """
+    prompt = build_evaluation_prompt(
+        question,
+        answer
+    )
 
-    evaluation = {
-        "score": 0,
-        "correctness": 0,
-        "completeness": 0,
-        "depth": 0,
-        "clarity": 0,
-        "relevance": 0,
-        "communication": 0,
-        "strengths": [],
-        "weaknesses": [],
-        "suggestions": [],
-        "feedback": ""
-    }
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt,
+        config={
+            "response_mime_type": "application/json"
+        }
+    )
+
+    evaluation = json.loads(response.text)
 
     return evaluation
+
 
 if __name__ == "__main__":
 
@@ -31,3 +42,7 @@ if __name__ == "__main__":
     )
 
     print(result)
+
+    print("\nScore:", result["score"])
+    print("Depth:", result["depth"])
+    print("Feedback:", result["feedback"])
