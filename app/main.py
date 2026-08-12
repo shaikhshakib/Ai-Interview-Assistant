@@ -1,25 +1,36 @@
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+
 from app.data.questions import QUESTIONS
-from fastapi.responses import HTMLResponse, FileResponse
-from fastapi.responses import JSONResponse
-import uuid 
+from app.evaluation import evaluate_interview
+
+from fastapi.responses import HTMLResponse, JSONResponse
+
+import uuid
 
 
 app = FastAPI(title="AI Interview Assistant")
 
+
 interviews = {}
+
+
 app.mount(
     "/static",
     StaticFiles(directory="app/static"),
     name="static"
 )
 
+
 templates = Jinja2Templates(
     directory="app/templates"
 )
 
+
+# -----------------------------------
+# HOME PAGE
+# -----------------------------------
 
 @app.get("/")
 async def home(request: Request):
@@ -30,7 +41,15 @@ async def home(request: Request):
         context={}
     )
 
-@app.get("/interview/{topic}", response_class=HTMLResponse)
+
+# -----------------------------------
+# START INTERVIEW
+# -----------------------------------
+
+@app.get(
+    "/interview/{topic}",
+    response_class=HTMLResponse
+)
 async def interview_page(
     request: Request,
     topic: str
@@ -38,12 +57,19 @@ async def interview_page(
 
     interview_id = str(uuid.uuid4())
 
-    questions = QUESTIONS.get(topic.lower())
+    questions = QUESTIONS.get(
+        topic.lower()
+    )
 
     if not questions:
-        return HTMLResponse("Invalid Interview Topic")
 
-    interviews[interview_id] = []
+        return HTMLResponse(
+            "Invalid Interview Topic"
+        )
+
+    interviews[interview_id] = {
+        "answers": []
+    }
 
     return templates.TemplateResponse(
         request=request,
@@ -56,60 +82,145 @@ async def interview_page(
             "interview_id": interview_id
         }
     )
+
+
+# -----------------------------------
+# NEXT QUESTION
+# -----------------------------------
+
 @app.post("/next-question")
 async def next_question(data: dict):
 
     topic = data.get("topic").lower()
+
     current = data.get("current")
+
     answer = data.get("answer")
+
     interview_id = data.get("interview_id")
+
 
     questions = QUESTIONS.get(topic)
 
+
+    # Check topic
+
     if not questions:
+
         return JSONResponse({
             "error": "Invalid topic"
         })
 
+
+    # Check interview ID
+
     if interview_id not in interviews:
+
         return JSONResponse({
             "error": "Invalid interview"
         })
 
-    interviews[interview_id].append({
+
+    # Store answer
+
+    interviews[interview_id]["answers"].append({
+
         "question_number": current,
+
         "question": questions[current - 1],
+
         "answer": answer
+
     })
+
+
+    # Check if interview is finished
 
     if current >= len(questions):
 
+        result = evaluate_interview(
+            interviews[interview_id]["answers"]
+        )
+
+
+        # Store evaluations
+
+        interviews[interview_id]["evaluations"] = (
+            result["evaluations"]
+        )
+
+
+        # Store overall score
+
+        interviews[interview_id]["overall_score"] = (
+            result["overall_score"]
+        )
+
+
         return JSONResponse({
+
             "finished": True,
-             "interview_id": interview_id
+
+            "interview_id": interview_id
+
         })
 
+
+    # Return next question
+
     return JSONResponse({
+
         "finished": False,
+
         "question": questions[current],
+
         "question_number": current + 1
+
     })
 
-@app.get("/result/{interview_id}", response_class=HTMLResponse)
+
+# -----------------------------------
+# RESULT PAGE
+# -----------------------------------
+
+@app.get(
+    "/result/{interview_id}",
+    response_class=HTMLResponse
+)
 async def result_page(
     request: Request,
     interview_id: str
 ):
 
-    answers = interviews.get(interview_id)
+    interview = interviews.get(
+        interview_id
+    )
 
-    if answers is None:
-        return HTMLResponse("Invalid Interview ID")
+
+    # Check interview ID
+
+    if not interview:
+
+        return HTMLResponse(
+            "Invalid interview"
+        )
+
 
     return templates.TemplateResponse(
+
         request=request,
+
         name="result.html",
+
         context={
-            "answers": answers
+
+            "answers": interview["answers"],
+
+            "overall_score": interview.get(
+                "overall_score",
+                0
+            )
+
         }
+
     )

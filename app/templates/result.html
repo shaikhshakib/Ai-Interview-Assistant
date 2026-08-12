@@ -21,6 +21,11 @@
 
         <p>You have completed your interview.</p>
 
+        <h2>
+            Overall Score: {{ overall_score }} / 10
+        </h2>
+
+
         {% for item in answers %}
 
             <div class="result-question">
@@ -33,15 +38,104 @@
                     {{ item.question }}
                 </p>
 
+
                 <h3>Your Answer</h3>
 
                 <div class="answer-box">
                     {{ item.answer }}
                 </div>
 
+
+                {% if item.evaluation %}
+
+                    <h3>
+                        AI Score:
+                        {{ item.evaluation.score }} / 10
+                    </h3>
+
+
+                    <p>
+                        <strong>Correctness:</strong>
+                        {{ item.evaluation.correctness }} / 10
+                    </p>
+
+                    <p>
+                        <strong>Completeness:</strong>
+                        {{ item.evaluation.completeness }} / 10
+                    </p>
+
+                    <p>
+                        <strong>Depth:</strong>
+                        {{ item.evaluation.depth }} / 10
+                    </p>
+
+                    <p>
+                        <strong>Clarity:</strong>
+                        {{ item.evaluation.clarity }} / 10
+                    </p>
+
+                    <p>
+                        <strong>Relevance:</strong>
+                        {{ item.evaluation.relevance }} / 10
+                    </p>
+
+                    <p>
+                        <strong>Communication:</strong>
+                        {{ item.evaluation.communication }} / 10
+                    </p>
+
+
+                    <h3>Strengths</h3>
+
+                    <ul>
+
+                        {% for strength in item.evaluation.strengths %}
+
+                            <li>{{ strength }}</li>
+
+                        {% endfor %}
+
+                    </ul>
+
+
+                    <h3>Areas for Improvement</h3>
+
+                    <ul>
+
+                        {% for weakness in item.evaluation.weaknesses %}
+
+                            <li>{{ weakness }}</li>
+
+                        {% endfor %}
+
+                    </ul>
+
+
+                    <h3>Suggestions</h3>
+
+                    <ul>
+
+                        {% for suggestion in item.evaluation.suggestions %}
+
+                            <li>{{ suggestion }}</li>
+
+                        {% endfor %}
+
+                    </ul>
+
+
+                    <h3>AI Feedback</h3>
+
+                    <p>
+                        {{ item.evaluation.feedback }}
+                    </p>
+
+                {% endif %}
+
             </div>
 
         {% endfor %}
+
 
         <a href="/" class="back-btn">
             Start Another Interview

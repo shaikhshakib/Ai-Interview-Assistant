@@ -4,10 +4,11 @@ import json
 from dotenv import load_dotenv
 from google import genai
 
-from prompts import build_evaluation_prompt
+from app.prompts import build_evaluation_prompt
 
 
 load_dotenv()
+
 
 client = genai.Client(
     api_key=os.getenv("GOOGLE_API_KEY")
@@ -34,15 +35,64 @@ def evaluate_answer(question, answer):
     return evaluation
 
 
-if __name__ == "__main__":
+def calculate_overall_score(evaluations):
 
-    result = evaluate_answer(
-        "What is Python?",
-        "Python is a high-level programming language."
+    if not evaluations:
+        return 0
+
+    total_score = sum(
+        evaluation["score"]
+        for evaluation in evaluations
     )
 
-    print(result)
+    overall_score = total_score / len(evaluations)
 
-    print("\nScore:", result["score"])
-    print("Depth:", result["depth"])
-    print("Feedback:", result["feedback"])
+    return round(overall_score, 2)
+
+
+def evaluate_interview(interview):
+
+    evaluations = []
+
+    for item in interview:
+
+        evaluation = evaluate_answer(
+            item["question"],
+            item["answer"]
+        )
+
+        item["evaluation"] = evaluation
+
+        evaluations.append(evaluation)
+
+    overall_score = calculate_overall_score(evaluations)
+
+    return {
+        "evaluations": evaluations,
+        "overall_score": overall_score
+    }
+
+
+if __name__ == "__main__":
+
+    interview = [
+        {
+            "question_number": 1,
+            "question": "What is Python?",
+            "answer": "Python is a high-level programming language."
+        },
+        {
+            "question_number": 2,
+            "question": "What is a list?",
+            "answer": "A list is a collection of items."
+        }
+    ]
+
+    result = evaluate_interview(interview)
+
+    print("Overall Score:", result["overall_score"])
+
+    print("\nInterview Data:")
+
+    for item in interview:
+        print(item)
