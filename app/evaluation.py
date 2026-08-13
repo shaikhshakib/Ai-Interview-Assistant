@@ -3,8 +3,9 @@ import json
 
 from dotenv import load_dotenv
 from google import genai
+from google.genai import errors
 
-from app.prompts import build_evaluation_prompt
+from prompts import build_evaluation_prompt
 
 
 load_dotenv()
@@ -22,13 +23,37 @@ def evaluate_answer(question, answer):
         answer
     )
 
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt,
-        config={
-            "response_mime_type": "application/json"
+    try:
+
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+            config={
+                "response_mime_type": "application/json"
+            }
+        )
+
+    except errors.ClientError as e:
+
+        print("Gemini API error:", e)
+
+        return {
+            "score": 0,
+            "correctness": 0,
+            "completeness": 0,
+            "depth": 0,
+            "clarity": 0,
+            "relevance": 0,
+            "communication": 0,
+            "strengths": [],
+            "weaknesses": [
+                "AI evaluation was unavailable"
+            ],
+            "suggestions": [
+                "Please try the interview again later"
+            ],
+            "feedback": "The AI evaluation service is temporarily unavailable."
         }
-    )
 
     evaluation = json.loads(response.text)
 
@@ -65,7 +90,9 @@ def evaluate_interview(interview):
 
         evaluations.append(evaluation)
 
-    overall_score = calculate_overall_score(evaluations)
+    overall_score = calculate_overall_score(
+        evaluations
+    )
 
     return {
         "evaluations": evaluations,
@@ -90,9 +117,13 @@ if __name__ == "__main__":
 
     result = evaluate_interview(interview)
 
-    print("Overall Score:", result["overall_score"])
+    print(
+        "Overall Score:",
+        result["overall_score"]
+    )
 
     print("\nInterview Data:")
 
     for item in interview:
+
         print(item)
