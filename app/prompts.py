@@ -60,3 +60,58 @@ Do not include any text outside the JSON object.
 """
 
     return prompt
+
+def build_interview_evaluation_prompt(interview):
+
+    prompt = f"""
+You are an expert technical interviewer.
+
+Evaluate the following complete interview.
+
+Interview:
+{interview}
+
+For every question, provide:
+
+- score
+- correctness
+- completeness
+- depth
+- clarity
+- relevance
+- communication
+- strengths
+- weaknesses
+- suggestions
+- feedback
+
+All scores must be from 0 to 10.
+
+The final score for each answer must be calculated by giving equal
+importance to correctness, completeness, depth, and communication.
+
+Return ONLY valid JSON.
+
+Use this structure:
+
+{{
+    "evaluations": [
+        {{
+            "question_number": 1,
+            "score": 0,
+            "correctness": 0,
+            "completeness": 0,
+            "depth": 0,
+            "clarity": 0,
+            "relevance": 0,
+            "communication": 0,
+            "strengths": [],
+            "weaknesses": [],
+            "suggestions": [],
+            "feedback": ""
+        }}
+    ]
+}}
+"""
+
+    return prompt

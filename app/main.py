@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-
+from google.genai import errors
 from app.data.questions import QUESTIONS
 from app.evaluation import evaluate_interview
 

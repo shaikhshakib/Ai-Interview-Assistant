@@ -4,8 +4,8 @@ import json
 from dotenv import load_dotenv
 from google import genai
 from google.genai import errors
-
 from prompts import build_evaluation_prompt
+from prompts import build_interview_evaluation_prompt
 
 
 load_dotenv()
@@ -77,18 +77,49 @@ def calculate_overall_score(evaluations):
 
 def evaluate_interview(interview):
 
-    evaluations = []
+    prompt = build_interview_evaluation_prompt(
+        interview
+    )
 
-    for item in interview:
+    try:
 
-        evaluation = evaluate_answer(
-            item["question"],
-            item["answer"]
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+            config={
+                "response_mime_type": "application/json"
+            }
         )
 
-        item["evaluation"] = evaluation
+    except errors.ClientError as e:
 
-        evaluations.append(evaluation)
+        print("Gemini API error:", e)
+
+        return {
+            "evaluations": [],
+            "overall_score": 0
+        }
+
+    result = json.loads(response.text)
+
+    evaluations = result.get(
+        "evaluations",
+        []
+    )
+
+    # Match each evaluation with its question
+    for item in interview:
+
+        for evaluation in evaluations:
+
+            if (
+                evaluation["question_number"]
+                == item["question_number"]
+            ):
+
+                item["evaluation"] = evaluation
+
+                break
 
     overall_score = calculate_overall_score(
         evaluations
@@ -98,8 +129,6 @@ def evaluate_interview(interview):
         "evaluations": evaluations,
         "overall_score": overall_score
     }
-
-
 if __name__ == "__main__":
 
     interview = [
