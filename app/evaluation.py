@@ -74,8 +74,32 @@ def calculate_overall_score(evaluations):
 
     return round(overall_score, 2)
 
+def validate_interview(interview):
+
+    if not interview:
+        return False
+
+    for item in interview:
+
+        if not isinstance(item, dict):
+            return False
+
+        if not item.get("question"):
+            return False
+
+        if not item.get("answer"):
+            return False
+
+    return True
 
 def evaluate_interview(interview):
+
+    if not validate_interview(interview):
+
+        return {
+            "evaluations": [],
+            "overall_score": 0
+        }
 
     prompt = build_interview_evaluation_prompt(
         interview
