@@ -68,8 +68,9 @@ async def interview_page(
         )
 
     interviews[interview_id] = {
-        "answers": []
-    }
+    "answers": [],
+    "status": "in_progress"
+}
 
     return templates.TemplateResponse(
         request=request,
@@ -139,31 +140,18 @@ async def next_question(data: dict):
     if current >= len(questions):
 
         result = evaluate_interview(
-            interviews[interview_id]["answers"]
-        )
+        interviews[interview_id]["answers"]
+    )
 
+    interviews[interview_id]["evaluations"] = result["evaluations"]
+    interviews[interview_id]["overall_score"] = result["overall_score"]
 
-        # Store evaluations
+    interviews[interview_id]["status"] = "completed"
 
-        interviews[interview_id]["evaluations"] = (
-            result["evaluations"]
-        )
-
-
-        # Store overall score
-
-        interviews[interview_id]["overall_score"] = (
-            result["overall_score"]
-        )
-
-
-        return JSONResponse({
-
-            "finished": True,
-
-            "interview_id": interview_id
-
-        })
+    return JSONResponse({
+        "finished": True,
+        "interview_id": interview_id
+    })
 
 
     # Return next question
