@@ -134,7 +134,7 @@ async def next_question(data: dict):
 
     })
 
-    print("interviewws")
+    
     # Check if interview is finished
 
     if current >= len(questions):
